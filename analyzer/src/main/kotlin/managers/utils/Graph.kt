@@ -23,19 +23,26 @@ import java.util.LinkedList
 
 import org.apache.logging.log4j.kotlin.logger
 
-import org.ossreviewtoolkit.model.Identifier
-
 /**
  * A class to represent a graph with dependencies. This representation is basically an adjacency list implemented by a
  * map whose keys are package identifiers and whose values are the identifiers of packages these packages depend on.
  */
-internal class Graph private constructor(private val nodeMap: MutableMap<Identifier, MutableSet<Identifier>>) {
+internal class Graph private constructor(private val nodeMap: MutableMap<Module, MutableSet<Module>>) {
+    internal data class Module(
+        val name: String,
+        val version: String
+    ) {
+        override fun toString(): String =
+            if (version.isBlank()) name
+            else "$name@version"
+    }
+
     constructor() : this(mutableMapOf())
 
     /**
      * Return a set with all nodes (i.e. package identifiers) contained in this graph.
      */
-    val nodes: Set<Identifier> get() = nodeMap.keys
+    val nodes: Set<Module> get() = nodeMap.keys
 
     /**
      * Return the size of this graph. This is the number of nodes it contains.
@@ -46,7 +53,7 @@ internal class Graph private constructor(private val nodeMap: MutableMap<Identif
      * Add an edge (i.e. a dependency relation) from [source] to [target] to this dependency graph. Add missing nodes if
      * necessary.
      */
-    fun addEdge(source: Identifier, target: Identifier) {
+    fun addEdge(source: Module, target: Module) {
         nodeMap.getOrPut(source) { mutableSetOf() } += target
         addNode(target)
     }
@@ -54,7 +61,7 @@ internal class Graph private constructor(private val nodeMap: MutableMap<Identif
     /**
      * Add a node to this dependency graph.
      */
-    fun addNode(node: Identifier) {
+    fun addNode(node: Module) {
         nodeMap.getOrPut(node) { mutableSetOf() }
     }
 
@@ -62,7 +69,7 @@ internal class Graph private constructor(private val nodeMap: MutableMap<Identif
      * Return a subgraph of this [Graph] that contains only nodes from the given set of [subNodes]. This can be used to
      * construct graphs for specific scopes.
      */
-    fun subgraph(subNodes: Set<Identifier>): Graph =
+    fun subgraph(subNodes: Set<Module>): Graph =
         Graph(
             nodeMap.filter { it.key in subNodes }.mapValuesTo(mutableMapOf()) { e ->
                 e.value.filterTo(mutableSetOf()) { it in subNodes }
@@ -79,10 +86,10 @@ internal class Graph private constructor(private val nodeMap: MutableMap<Identif
         val outgoingEdgesForNodes = nodeMap.mapValuesTo(mutableMapOf()) { it.value.toMutableSet() }
         val color = outgoingEdgesForNodes.keys.associateWithTo(mutableMapOf()) { NodeColor.WHITE }
 
-        fun visit(u: Identifier) {
+        fun visit(u: Module) {
             color[u] = NodeColor.GRAY
 
-            val nodesClosingCircle = mutableSetOf<Identifier>()
+            val nodesClosingCircle = mutableSetOf<Module>()
 
             outgoingEdgesForNodes[u].orEmpty().forEach { v ->
                 if (color[v] == NodeColor.WHITE) {
@@ -94,7 +101,7 @@ internal class Graph private constructor(private val nodeMap: MutableMap<Identif
 
             outgoingEdgesForNodes[u]?.removeAll(nodesClosingCircle)
             nodesClosingCircle.forEach { v ->
-                logger.debug { "Removing edge: ${u.toCoordinates()} -> ${v.toCoordinates()}}." }
+                logger.debug { "Removing edge: $u -> $v." }
             }
 
             color[u] = NodeColor.BLACK
@@ -116,7 +123,7 @@ internal class Graph private constructor(private val nodeMap: MutableMap<Identif
     /**
      * Return the identifiers of the direct dependencies of the package denoted by [id].
      */
-    fun dependencies(id: Identifier): Set<Identifier> = nodeMap[id].orEmpty()
+    fun dependencies(id: Module): Set<Module> = nodeMap[id].orEmpty()
 }
 
 private enum class NodeColor { WHITE, GRAY, BLACK }

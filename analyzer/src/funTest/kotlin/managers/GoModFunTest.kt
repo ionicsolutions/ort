@@ -21,10 +21,12 @@ package org.ossreviewtoolkit.analyzer.managers
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.should
+import org.ossreviewtoolkit.downloader.VersionControlSystem
 
 import org.ossreviewtoolkit.model.toYaml
 import org.ossreviewtoolkit.utils.test.getAssetFile
 import org.ossreviewtoolkit.utils.test.matchExpectedResult
+import java.io.File
 
 class GoModFunTest : StringSpec({
     val testDir = getAssetFile("projects/synthetic")
@@ -93,12 +95,27 @@ class GoModFunTest : StringSpec({
     }
 
     "Local module dependencies make the analysis fail" {
-        // TODO: Implement support for local dependencies, see https://github.com/oss-review-toolkit/ort/issues/7649.
-        val definitionFile = testDir.resolve("gomod-submodules/app/go.mod")
+        val definitionFileApp = testDir.resolve("gomod-submodules/app/go.mod")
+        val definitionFileUtils = testDir.resolve("gomod-submodules/utils/go.mod")
         val expectedResultFile = testDir.resolve("gomod-submodules-embed-expected-output.yml")
+        val expectedDefinitionFilePathUtils = getDefinitionFilePath(definitionFileUtils)
 
-        val result = create("GoMod").resolveSingleProject(definitionFile)
+        val result = create("GoMod").collateMultipleProjects(definitionFileApp, definitionFileUtils)
 
-        result.withInvariantIssues().toYaml() should matchExpectedResult(expectedResultFile, definitionFile)
+        result.withResolvedScopes().toYaml() should matchExpectedResult(
+            expectedResultFile,
+            definitionFileApp,
+            custom = mapOf(
+                "<REPLACE_DEFINITION_FILE_PATH_UTILS>" to expectedDefinitionFilePathUtils,
+                "<REPLACE_PATH_UTILS>" to expectedDefinitionFilePathUtils.substringBeforeLast('/')
+            )
+        )
     }
 })
+
+private fun getDefinitionFilePath(definitionFile: File): String {
+    val projectDir = definitionFile.parentFile
+    val vcsDir = VersionControlSystem.forDirectory(projectDir)!!
+    val path = vcsDir.getPathToRoot(projectDir)
+    return "$path/${definitionFile.name}"
+}

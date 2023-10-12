@@ -342,6 +342,7 @@ abstract class PackageManager(
                                 it.collectMessages()
                         )
                     )
+                    println(it.stackTraceToString())
 
                     result[definitionFile] = listOf(ProjectAnalyzerResult(projectWithIssues, emptySet(), issues))
                 }

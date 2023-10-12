@@ -20,6 +20,7 @@
 package org.ossreviewtoolkit.analyzer.managers
 
 import io.kotest.core.spec.Spec
+import io.kotest.inspectors.forAll
 import io.kotest.matchers.collections.haveSize
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -66,16 +67,18 @@ fun PackageManager.resolveSingleProject(definitionFile: File, resolveScopes: Boo
  * Resolve the dependencies of a [definitionFile] which should create at least one project. All created projects will be
  * collated in an [AnalyzerResult] with their dependency graph.
  */
-fun PackageManager.collateMultipleProjects(definitionFile: File): AnalyzerResult {
-    val managerResult = resolveDependencies(listOf(definitionFile), emptyMap())
+fun PackageManager.collateMultipleProjects(vararg definitionfiles: File): AnalyzerResult {
+    val managerResult = resolveDependencies(definitionfiles.toList(), emptyMap())
 
     val builder = AnalyzerResultBuilder()
     managerResult.dependencyGraph?.let {
         builder.addDependencyGraph(managerName, it).addPackages(managerResult.sharedPackages)
     }
-    managerResult.projectResults[definitionFile].shouldNotBeNull {
-        this shouldHaveAtLeastSize 1
-        forEach { builder.addResult(it) }
+    definitionfiles.forAll { definitionFile ->
+        managerResult.projectResults[definitionFile].shouldNotBeNull {
+            this shouldHaveAtLeastSize 1
+            forEach { builder.addResult(it) }
+        }
     }
 
     return builder.build()
