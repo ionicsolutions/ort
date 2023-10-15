@@ -46,18 +46,20 @@ your own copy as nothing on the internet is forever
 ORT can be used as library (for programmatic use), via a command line interface (for scripted use), or via its CI
 integrations. It consists of the following tools which can be combined into a *highly customizable* pipeline:
 
-* [*Analyzer*](#analyzer) - determines the dependencies of projects and their metadata, abstracting which package
-  managers or build systems are actually being used.
-* [*Downloader*](#downloader) - fetches all source code of the projects and their dependencies, abstracting which
-  Version Control System (VCS) or other means are used to retrieve the source code.
-* [*Scanner*](#scanner) - uses configured source code scanners to detect license / copyright findings, abstracting
-  the type of scanner.
-* [*Advisor*](#advisor) - retrieves security advisories for used dependencies from configured vulnerability data
-  services.
-* [*Evaluator*](#evaluator) - evaluates custom policy rules along with custom license classifications against the data
-  gathered in preceding stages and returns a list of policy violations, e.g. to flag license findings.
-* [*Reporter*](#reporter) - presents results in various formats such as visual reports, Open Source notices or
-  Bill-Of-Materials (BOMs) to easily identify dependencies, licenses, copyrights or policy rule violations.
+* [*Analyzer*](./website/docs/tools/analyzer.md) - determines the dependencies of projects and their metadata,
+  abstracting which package managers or build systems are actually being used.
+* [*Downloader*](./website/docs/tools/downloader.md) - fetches all source code of the projects and their dependencies,
+  abstracting which Version Control System (VCS) or other means are used to retrieve the source code.
+* [*Scanner*](./website/docs/tools/scanner.md) - uses configured source code scanners to detect license / copyright
+  findings, abstracting the type of scanner.
+* [*Advisor*](./website/docs/tools/advisor.md) - retrieves security advisories for used dependencies from configured
+  vulnerability data services.
+* [*Evaluator*](./website/docs/tools/evaluator.md) - evaluates custom policy rules along with custom license
+  classifications against the data gathered in preceding stages and returns a list of policy violations, e.g. to flag
+  license findings.
+* [*Reporter*](./website/docs/tools/reporter.md) - presents results in various formats such as visual reports, Open
+  Source notices or Bill-Of-Materials (BOMs) to easily identify dependencies, licenses, copyrights or policy rule
+  violations.
 * *Notifier* - sends result notifications via different channels (like [emails](./examples/example.notifications.kts)
   and / or JIRA tickets).
 
