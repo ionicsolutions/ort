@@ -6,7 +6,9 @@ increased degree of automation and local configurations should only be done if t
 
 * [excludes](#excludes) - Mark [files, directories](#excluding-paths) or [package manager scopes](#excluding-scopes) as
   not included in released artifacts.
-* [curations](#curations) - Overwrite package metadata, set a concluded license or correct license findings.
+* [curations](#curations) - Override package metadata, set a concluded license or correct license findings. Needs to be
+  enabled in global ORT configuration ([config.yml](../getting-started/usage.md#ort-configuration-file)) via
+  `enableRepositoryPackageCurations: true`.
 * [resolutions](#resolutions) - Resolve any issues or policy rule violations.
 * [license choices](#license-choices) - Select a license for packages which offer a license choice.
 
