@@ -121,8 +121,8 @@ data class AdvisorRecord(
 }
 
 /**
- * Merge this list of [Vulnerability] objects by combining vulnerabilities with the same ID and merging their
- * references.
+ * Merge this collection of [Vulnerability] objects by combining vulnerabilities with the same ID and merging their
+ * references. Other [Vulnerability] properties are arbitrarily taken from the first object.
  */
 private fun Collection<Vulnerability>.mergeVulnerabilities(): List<Vulnerability> {
     val vulnerabilitiesById = groupByTo(sortedMapOf()) { it.id }
@@ -130,10 +130,11 @@ private fun Collection<Vulnerability>.mergeVulnerabilities(): List<Vulnerability
 }
 
 /**
- * Merge this (non-empty) list of [Vulnerability] objects (which are expected to have the same ID) by to a single
- * [Vulnerability] that contains all the references from the source vulnerabilities (with duplicates removed).
+ * Merge this (non-empty) collection of [Vulnerability] objects (which are expected to have the same ID) to a single
+ * [Vulnerability] that contains all the references from the original vulnerabilities (with duplicates removed). Other
+ * [Vulnerability] properties are arbitrarily taken from the first object.
  */
 private fun Collection<Vulnerability>.mergeReferences(): Vulnerability {
     val references = flatMapTo(mutableSetOf()) { it.references }
-    return Vulnerability(id = first().id, references = references.toList())
+    return first().copy(references = references.toList())
 }
